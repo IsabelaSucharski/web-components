@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+  </head>
+  <script>
+    class WcRelogio extends HTMLElement {
+      constructor() {
+        super();
+
+        this.attachShadow({ mode: "open" });
+        // const svgElement = document.createElement("img");
+
+        this.txtElement = document.createElement("span");
+        this.txtElement.textContent = "10:10:15";
+
+        this.shadowRoot.append(this.txtElement);
+      }
+      connectedCallback() {
+        this.timer = setInterval(() => {
+          this.txtElement.textContent = getHMS();
+          console.log("exec");
+        }, 1000);
+
+        const type = this.getAttribute("tipo");
+
+        if (type) console.log(type);
+      }
+
+      disconnectedCallback() {
+        clearInterval(this.timer);
+      }
+    }
+
+    function getHMS() {
+      const date = new Date();
+      const h = formatNumber(date.getHours());
+      const m = formatNumber(date.getMinutes());
+      const s = formatNumber(date.getSeconds());
+      return `${h}:${m}:${s}`;
+    }
+
+    function formatNumber(n) {
+      return String(n).padStart(2, "0");
+    }
+
+    customElements.define("wc-relogio", WcRelogio);
+  </script>
+  <body>
+    <wc-relogio></wc-relogio>
+    <wc-relogio tipo="analogico"></wc-relogio>
+  </body>
+</html>
