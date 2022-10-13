@@ -12,27 +12,64 @@
         super();
 
         this.attachShadow({ mode: "open" });
-        // const svgElement = document.createElement("img");
 
         this.txtElement = document.createElement("span");
-        this.txtElement.textContent = "10:10:15";
-
+        this.txtElement.textContent = getHMS();
+        
         this.shadowRoot.append(this.txtElement);
       }
+
       connectedCallback() {
-        this.timer = setInterval(() => {
-          this.txtElement.textContent = getHMS();
-          console.log("exec");
-        }, 1000);
-
-        const type = this.getAttribute("tipo");
-
-        if (type) console.log(type);
+        const analogico = this.getAttribute("tipo") === "analogico";
+        if (analogico) showRelogioAnalogio(this.txtElement);
+        else
+          this.timer = setInterval(() => {
+            this.txtElement.textContent = getHMS();
+          }, 1000);
       }
 
       disconnectedCallback() {
         clearInterval(this.timer);
       }
+    }
+
+    function showRelogioAnalogio(element) {
+      const date = new Date();
+      const s = date.getSeconds();
+      const m = date.getMinutes() + s / 60;
+      const h = (date.getHours() % 12) + m / 60;
+      let marcadores = "";
+
+      for (let i = 0; i < 360; i += 6) {
+        const grossa = i % 30 === 0;
+        if (grossa)
+          marcadores += `
+        <path transform="rotate(${i})" d="M 0 -46 v 3" />
+        `;
+        else {
+          marcadores += `
+        <path transform="rotate(${i})" d="M 0 -46 v 3" stroke-width="1" />
+        `;
+        }
+      }
+
+      element.innerHTML = `<svg width="100" height="100">
+        <g transform="translate(50, 50)" fill="none" stroke="black" stroke-width="2">
+          <circle cx="0" cy="0" r="46" />
+          ${marcadores}
+          <path transform="rotate(${
+            h * (360 / 12)
+          })" d="M 0 0 v -34" fill="black" stroke-width="3" />
+          <circle cx="0" cy="0" r="3" stroke="none" fill="black" />
+          
+          <path transform="rotate(${m * (360 / 60)})" d="M 0 0 v -40" />
+          
+          <path transform="rotate(${
+            s * (360 / 60)
+          })" d="M 0 0 v -40" stroke="red" />
+          <circle cx="0" cy="0" r="2" stroke="none" fill="red" />
+        </g>
+      </svg>`;
     }
 
     function getHMS() {
